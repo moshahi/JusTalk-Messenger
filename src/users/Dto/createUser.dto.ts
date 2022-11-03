@@ -22,4 +22,7 @@ export class createUserDto {
 
   @ApiProperty()
   name?: string;
+
+  @ApiProperty()
+  ref_token?: string;
 }

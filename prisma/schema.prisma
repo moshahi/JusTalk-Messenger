@@ -18,6 +18,7 @@ model User {
   description String
   name        String
   profileImg  String
+  ref_token   String @default("null")
   status      status @default(avalabale)
 }
 

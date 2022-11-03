@@ -22,4 +22,7 @@ export class updateUserDto {
 
   @ApiProperty()
   name?: string;
+
+  @ApiProperty()
+  ref_token: string;
 }
