@@ -29,7 +29,6 @@ export class AuthService {
         true,
       );
       await this.refTokenOperation(user.id, tokens.refreshToken);
-      response.cookie('acctoken', tokens.accessToken);
       response.cookie('reftoken', tokens.refreshToken, { httpOnly: true });
       return {
         message: 'user logged in successfuly',
