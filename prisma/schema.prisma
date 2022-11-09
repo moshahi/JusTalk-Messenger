@@ -20,6 +20,7 @@ model User {
   profileImg  String
   ref_token   String      @default("null")
   status      status      @default(avalabale)
+  avatarColor String
   from        Chat[]      @relation("from_user")
   to          Chat[]      @relation("to_user")
   UserGroup   UserGroup[]
