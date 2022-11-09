@@ -11,18 +11,57 @@ datasource db {
 }
 
 model User {
-  id          Int    @id @default(autoincrement())
-  username    String @unique
-  email       String @unique
+  id          Int         @id @default(autoincrement())
+  username    String      @unique
+  email       String      @unique
   password    String
   description String
   name        String
   profileImg  String
-  ref_token   String @default("null")
-  status      status @default(avalabale)
+  ref_token   String      @default("null")
+  status      status      @default(avalabale)
+  from        Chat[]      @relation("from_user")
+  to          Chat[]      @relation("to_user")
+  UserGroup   UserGroup[]
 }
 
 enum status {
   avalabale
   busy
+}
+
+model Messeges {
+  id      Int         @id @default(autoincrement())
+  type    MessegeEnum
+  content String
+}
+
+enum MessegeEnum {
+  text
+  file
+  sticker
+  photo
+  video
+}
+
+model Chat {
+  id        Int  @id @default(autoincrement())
+  from_user Int
+  to_user   Int
+  from      User @relation("from_user", fields: [to_user], references: [id])
+  to        User @relation("to_user", fields: [from_user], references: [id])
+}
+
+model Goroup {
+  id       Int    @id @default(autoincrement())
+  title    String
+  desc     String
+  uniqueId String
+}
+
+model UserGroup {
+  id      Int     @id @default(autoincrement())
+  userId  Int
+  user    User    @relation(fields: [userId], references: [id])
+  isAdmin Boolean @default(false)
 }
