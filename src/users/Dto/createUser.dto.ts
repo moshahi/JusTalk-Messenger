@@ -25,4 +25,7 @@ export class createUserDto {
 
   @ApiProperty()
   ref_token?: string;
+
+  @ApiProperty({ required: true })
+  avatarColor: string;
 }

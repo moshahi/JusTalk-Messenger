@@ -8,7 +8,15 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
   async create(body: createUserDto) {
     try {
-      const { username, email, password, profileImg, description, name } = body;
+      const {
+        username,
+        email,
+        password,
+        profileImg,
+        description,
+        name,
+        avatarColor,
+      } = body;
       const hashPassword: string = await bcrypt.hash(password, 10);
       await this.prisma.user.create({
         data: {
@@ -18,6 +26,7 @@ export class UsersService {
           profileImg,
           description,
           name,
+          avatarColor,
         },
       });
     } catch (error) {
