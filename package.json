@@ -23,6 +23,7 @@
   "dependencies": {
     "@nestjs/class-validator": "^0.13.4",
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/mapped-types": "*",
@@ -31,6 +32,8 @@
     "@prisma/client": "^4.5.0",
     "@types/cookie-parser": "^1.4.3",
     "bcrypt": "^5.1.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
     "prisma": "^4.5.0",
     "reflect-metadata": "^0.1.13",
