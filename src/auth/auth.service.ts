@@ -3,7 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './Dto/Login.dto';
 import * as bcrypt from 'bcrypt';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { RefreshDto } from './Dto/refresh.dto';
+import { accToken, refToken } from 'src/shared/secretKey';
 
 @Injectable()
 export class AuthService {
@@ -12,14 +14,13 @@ export class AuthService {
     try {
       const { username, password } = body;
       const user = await this.prisma.user.findUnique({ where: { username } });
-
       if (!user) {
-        return new BadRequestException('username not found!');
+        return response.status(404).json({ messege: 'user not found' });
       }
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return new BadRequestException('username or password not match');
+        return response.status(403).json({ messege: 'incorrect password' });
       }
 
       const tokens = await this.generateTokens(
@@ -29,25 +30,42 @@ export class AuthService {
         true,
       );
       await this.refTokenOperation(user.id, tokens.refreshToken);
-      response.cookie('reftoken', tokens.refreshToken, { httpOnly: true });
-      return {
-        message: 'user logged in successfuly',
-        acctoken: tokens.accessToken,
-      };
+      await response.cookie('reftoken', tokens.refreshToken, {
+        httpOnly: true,
+      });
+      return response
+        .status(200)
+        .json({ messege: 'login successfully', token: tokens.accessToken });
     } catch (error) {
       console.log(error);
       return 'server error';
     }
   }
-  async logOut(userId: number) {
+  async logOut(userId: number, response: Response) {
     await this.prisma.user.update({
       where: { id: userId },
       data: { ref_token: 'null' },
     });
-    return 'user logged out successfully';
+    response.clearCookie('reftoken');
+    return response.status(200).json({ messege: 'user logged out' });
+  }
+  async refresh(id: number, req: Request, res: Response) {
+    return res.json({ data: req });
+
+    // console.log(reftoken);
+    // if (!reftoken) {
+    //   return res.status(403).json({ message: 'access denided' });
+    // }
+    // const user = await this.prisma.user.findUnique({ where: { id } });
+    // const isMatch = await bcrypt.compare(reftoken, user.ref_token);
+    // if (!isMatch) {
+    //   return res.status(403).json({ message: 'access denided' });
+    // }
+    // const vr = await this.jwt.verify(reftoken);
+    // console.log(vr);
   }
   async refTokenOperation(userId: number, reftoken: string) {
-    const hashToken: string = bcrypt.hash(reftoken, 10);
+    const hashToken: string = await bcrypt.hash(reftoken, 10);
     await this.prisma.user.update({
       where: { id: userId },
       data: { ref_token: hashToken },
@@ -58,23 +76,23 @@ export class AuthService {
     if (acctoken && reftoken) {
       const accessToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: process.env.ACCESS_TOKEN, expiresIn: '20m' },
+        { secret: 'accToken', expiresIn: '20m' },
       );
       const refreshToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: process.env.REFRESH_TOKEN, expiresIn: '2w' },
+        { secret: 'refToken', expiresIn: '2w' },
       );
       return { refreshToken, accessToken };
     } else if (acctoken && !reftoken) {
       const accessToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: process.env.ACCESS_TOKEN, expiresIn: '20m' },
+        { secret: accToken, expiresIn: '20m' },
       );
       return { accessToken };
     } else if (!acctoken && reftoken) {
       const refreshToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: process.env.REFRESH_TOKEN, expiresIn: '2w' },
+        { secret: refToken, expiresIn: '2w' },
       );
       return { refreshToken };
     }
