@@ -15,9 +15,9 @@ model User {
   username    String      @unique
   email       String      @unique
   password    String
-  description String      @default("")
-  name        String      @default("")
-  profileImg  String      @default("")
+  description String      @default("jus-talk messeger")
+  name        String?
+  profileImg  String?
   ref_token   String      @default("null")
   status      status      @default(avalabale)
   avatarColor String
