@@ -5,7 +5,6 @@ import { LoginDto } from './Dto/Login.dto';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { RefreshDto } from './Dto/refresh.dto';
-import { accToken, refToken } from 'src/shared/secretKey';
 
 @Injectable()
 export class AuthService {
@@ -50,19 +49,37 @@ export class AuthService {
     return response.status(200).json({ messege: 'user logged out' });
   }
   async refresh(id: number, req: Request, res: Response) {
-    return res.json({ data: req });
+    try {
+      const reftoken = req.cookies.reftoken;
 
-    // console.log(reftoken);
-    // if (!reftoken) {
-    //   return res.status(403).json({ message: 'access denided' });
-    // }
-    // const user = await this.prisma.user.findUnique({ where: { id } });
-    // const isMatch = await bcrypt.compare(reftoken, user.ref_token);
-    // if (!isMatch) {
-    //   return res.status(403).json({ message: 'access denided' });
-    // }
-    // const vr = await this.jwt.verify(reftoken);
-    // console.log(vr);
+      if (!reftoken) {
+        return res.status(403).json({ message: 'access denided' });
+      }
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) {
+        return res.status(404).json({ message: 'user not found' });
+      }
+      const isMatch = await bcrypt.compare(reftoken, user.ref_token);
+      if (!isMatch) {
+        return res.status(403).json({ message: 'access denided' });
+      }
+      const verify = await this.jwt.verifyAsync(reftoken, {
+        secret: process.env.REFRESH_TOKEN,
+      });
+      const token = await this.generateTokens(
+        user.id,
+        user.username,
+        true,
+        false,
+      );
+      return res.status(200).json({
+        message: 'generate new access token',
+        token,
+      });
+    } catch (error) {
+      // console.log(error);
+      return res.status(403).json({ message: 'access denided' });
+    }
   }
   async refTokenOperation(userId: number, reftoken: string) {
     const hashToken: string = await bcrypt.hash(reftoken, 10);
@@ -76,23 +93,23 @@ export class AuthService {
     if (acctoken && reftoken) {
       const accessToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: 'accToken', expiresIn: '20m' },
+        { secret: process.env.ACCESS_TOKEN, expiresIn: '10m' },
       );
       const refreshToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: 'refToken', expiresIn: '2w' },
+        { secret: process.env.REFRESH_TOKEN, expiresIn: '14d' },
       );
       return { refreshToken, accessToken };
     } else if (acctoken && !reftoken) {
       const accessToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: accToken, expiresIn: '20m' },
+        { secret: process.env.ACCESS_TOKEN, expiresIn: '10m' },
       );
       return { accessToken };
     } else if (!acctoken && reftoken) {
       const refreshToken = await this.jwt.signAsync(
         { id: userId, username },
-        { secret: refToken, expiresIn: '2w' },
+        { secret: process.env.REFRESH_TOKEN, expiresIn: '14d' },
       );
       return { refreshToken };
     }
