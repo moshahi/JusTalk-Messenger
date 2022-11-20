@@ -51,12 +51,16 @@ export class AuthService {
       const { username, password } = body;
       const user = await this.prisma.user.findUnique({ where: { username } });
       if (!user) {
-        return response.status(404).json({ messege: 'user not found' });
+        return response
+          .status(404)
+          .json({ success: false, message: 'user not found' });
       }
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return response.status(403).json({ messege: 'incorrect password' });
+        return response
+          .status(403)
+          .json({ success: false, message: 'incorrect password' });
       }
 
       const tokens = await this.generateTokens(
@@ -70,7 +74,7 @@ export class AuthService {
         httpOnly: true,
       });
       return response.status(200).json({
-        messege: 'login successfully',
+        message: 'login successfully',
         data: tokens.accessToken,
         success: true,
       });
