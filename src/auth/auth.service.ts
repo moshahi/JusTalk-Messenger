@@ -101,7 +101,7 @@ export class AuthService {
           .json({ success: false, message: 'access denided' });
       }
       const tokenVeryfy = await this.jwt.verify(reftoken, {
-        secret: process.env.REFRESH_TKEN,
+        secret: process.env.REFRESH_TOKEN,
       });
 
       const user = await this.prisma.user.findUnique({
