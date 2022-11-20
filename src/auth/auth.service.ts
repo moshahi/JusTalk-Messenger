@@ -75,7 +75,10 @@ export class AuthService {
       });
       return response.status(200).json({
         message: 'login successfully',
-        data: tokens.accessToken,
+        data: {
+          token: tokens.accessToken,
+          user,
+        },
         success: true,
       });
     } catch (error) {
