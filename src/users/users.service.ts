@@ -12,21 +12,50 @@ export class UsersService {
     try {
       const { id, username } = query;
       if (id && !username) {
-        const user = await this.prisma.user.findUnique({ where: { id } });
+        const user = await this.prisma.user.findUnique({
+          where: { id },
+          select: {
+            username: true,
+            email: true,
+            description: true,
+            profileImg: true,
+            avatarColor: true,
+            status: true,
+          },
+        });
         if (user) {
           return { success: true, message: 'user founded', data: user };
         }
         return { success: false, message: 'user not found' };
       }
       if (!id && username) {
-        const user = await this.prisma.user.findUnique({ where: { username } });
+        const user = await this.prisma.user.findUnique({
+          where: { username },
+          select: {
+            username: true,
+            email: true,
+            description: true,
+            profileImg: true,
+            avatarColor: true,
+            status: true,
+          },
+        });
         if (user) {
           return { success: true, message: 'user founded', data: user };
         }
         return { success: false, message: 'user not found' };
       }
       if (!id && !username) {
-        const user = await this.prisma.user.findMany();
+        const user = await this.prisma.user.findMany({
+          select: {
+            username: true,
+            email: true,
+            description: true,
+            profileImg: true,
+            avatarColor: true,
+            status: true,
+          },
+        });
         if (user) {
           return { success: true, message: 'users founded', data: user };
         }

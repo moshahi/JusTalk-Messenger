@@ -42,7 +42,6 @@ export class AuthService {
           avatarColor,
         },
       });
-      console.log(user);
       const loginBody: LoginDto = {
         username: user.username,
         password,
@@ -64,9 +63,7 @@ export class AuthService {
           .status(404)
           .json({ success: false, message: 'user not found' });
       }
-      console.log(user);
       const isMatch = await bcrypt.compare(password, user.password);
-      console.log(isMatch);
       if (!isMatch) {
         return response
           .status(403)
