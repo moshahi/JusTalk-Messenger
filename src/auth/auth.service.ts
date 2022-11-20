@@ -80,7 +80,7 @@ export class AuthService {
       });
     } catch (error) {
       console.log(error);
-      return { messege: 'server error', success: false };
+      return { message: 'server error', success: false };
     }
   }
   async logOut(userId: number, response: Response) {
@@ -89,7 +89,7 @@ export class AuthService {
       data: { ref_token: 'null' },
     });
     response.clearCookie('reftoken');
-    return response.status(200).json({ messege: 'user logged out' });
+    return response.status(200).json({ message: 'user logged out' });
   }
   async refresh(req: Request, res: Response) {
     try {
@@ -98,14 +98,14 @@ export class AuthService {
       if (!reftoken) {
         return res
           .status(403)
-          .json({ success: false, message: 'access denided' });
+          .json({ success: false, message: 'access denied' });
       }
-      const tokenVeryfy = await this.jwt.verify(reftoken, {
+      const tokenVerify = await this.jwt.verify(reftoken, {
         secret: process.env.REFRESH_TOKEN,
       });
 
       const user = await this.prisma.user.findUnique({
-        where: { id: tokenVeryfy.id },
+        where: { id: tokenVerify.id },
       });
       if (!user) {
         return res
@@ -116,7 +116,7 @@ export class AuthService {
       if (!isMatch) {
         return res
           .status(403)
-          .json({ success: false, message: 'access denided' });
+          .json({ success: false, message: 'access denied' });
       }
       await this.jwt.verifyAsync(reftoken, {
         secret: process.env.REFRESH_TOKEN,
@@ -134,7 +134,7 @@ export class AuthService {
       });
     } catch (error) {
       // console.log(error);
-      return res.status(403).json({ message: 'access denided' });
+      return res.status(403).json({ message: 'access denied' });
     }
   }
   async refTokenOperation(userId: number, reftoken: string) {
