@@ -5,7 +5,7 @@ import { LoginDto } from './Dto/Login.dto';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { RefreshDto } from './Dto/refresh.dto';
-import { createUserDto } from 'src/users/Dto/createUser.dto';
+import { createUserDto } from 'src/auth/Dto/createUser.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +22,14 @@ export class AuthService {
         name,
         avatarColor,
       } = body;
+
+      const findUser = await this.prisma.user.findFirst({
+        where: { OR: [{ email }, { username }] },
+      });
+
+      if (findUser) {
+        return res.status(401).json({ success: false, message: 'user exist!' });
+      }
       const hashPassword: string = await bcrypt.hash(password, 10);
       const user = await this.prisma.user.create({
         data: {
@@ -34,15 +42,16 @@ export class AuthService {
           avatarColor,
         },
       });
+      console.log(user);
       const loginBody: LoginDto = {
         username: user.username,
-        password: user.password,
+        password,
       };
 
       return this.login(loginBody, res);
     } catch (error) {
       console.log(error);
-      return 'server error';
+      return { success: false, message: 'server error' };
     }
   }
 
@@ -55,8 +64,9 @@ export class AuthService {
           .status(404)
           .json({ success: false, message: 'user not found' });
       }
+      console.log(user);
       const isMatch = await bcrypt.compare(password, user.password);
-
+      console.log(isMatch);
       if (!isMatch) {
         return response
           .status(403)
