@@ -6,36 +6,6 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
-  async create(body: createUserDto) {
-    try {
-      const {
-        username,
-        email,
-        password,
-        profileImg,
-        description,
-        name,
-        avatarColor,
-      } = body;
-      const hashPassword: string = await bcrypt.hash(password, 10);
-      await this.prisma.user.create({
-        data: {
-          username,
-          email,
-          password: hashPassword,
-          profileImg,
-          description,
-          name,
-          avatarColor,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-      return 'server error';
-    }
-
-    return { message: 'user created' };
-  }
 
   async getUniqueUserId(id) {
     try {

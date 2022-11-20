@@ -5,10 +5,47 @@ import { LoginDto } from './Dto/Login.dto';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { RefreshDto } from './Dto/refresh.dto';
+import { createUserDto } from 'src/users/Dto/createUser.dto';
 
 @Injectable()
 export class AuthService {
   constructor(private jwt: JwtService, private prisma: PrismaService) {}
+
+  async create(body: createUserDto, res: Response) {
+    try {
+      const {
+        username,
+        email,
+        password,
+        profileImg,
+        description,
+        name,
+        avatarColor,
+      } = body;
+      const hashPassword: string = await bcrypt.hash(password, 10);
+      const user = await this.prisma.user.create({
+        data: {
+          username,
+          email,
+          password: hashPassword,
+          profileImg,
+          description,
+          name,
+          avatarColor,
+        },
+      });
+      const loginBody: LoginDto = {
+        username: user.username,
+        password: user.password,
+      };
+
+      return this.login(loginBody, res);
+    } catch (error) {
+      console.log(error);
+      return 'server error';
+    }
+  }
+
   async login(body: LoginDto, response: Response) {
     try {
       const { username, password } = body;
@@ -34,10 +71,14 @@ export class AuthService {
       });
       return response
         .status(200)
-        .json({ messege: 'login successfully', token: tokens.accessToken });
+        .json({
+          messege: 'login successfully',
+          data: tokens.accessToken,
+          success: true,
+        });
     } catch (error) {
       console.log(error);
-      return 'server error';
+      return { messege: 'server error', success: false };
     }
   }
   async logOut(userId: number, response: Response) {
@@ -63,7 +104,7 @@ export class AuthService {
       if (!isMatch) {
         return res.status(403).json({ message: 'access denided' });
       }
-      const verify = await this.jwt.verifyAsync(reftoken, {
+      await this.jwt.verifyAsync(reftoken, {
         secret: process.env.REFRESH_TOKEN,
       });
       const token = await this.generateTokens(

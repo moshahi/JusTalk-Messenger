@@ -14,10 +14,20 @@ import { Request, Response } from 'express';
 import { RefreshDto } from './Dto/refresh.dto';
 import { logOutDto } from './Dto/logOut.dto';
 import { AuthenticateGuard } from 'src/shared/guards/auth.guard';
+import { createUserDto } from 'src/users/Dto/createUser.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('/register')
+  register(
+    @Body() body: createUserDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    return this.authService.create(body, res);
+  }
 
   @Post('login')
   login(@Body() body: LoginDto, @Res() response: Response) {
