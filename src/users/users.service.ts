@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { createUserDto } from '../auth/Dto/createUser.dto';
-import * as bcrypt from 'bcrypt';
 import { GetUsersDto } from './Dto/getUsers.dto';
 
 @Injectable()
@@ -15,6 +13,7 @@ export class UsersService {
         const user = await this.prisma.user.findUnique({
           where: { id: +id },
           select: {
+            id: true,
             username: true,
             email: true,
             description: true,
@@ -32,6 +31,7 @@ export class UsersService {
         const user = await this.prisma.user.findUnique({
           where: { username },
           select: {
+            id: true,
             username: true,
             email: true,
             description: true,
@@ -48,6 +48,7 @@ export class UsersService {
       if (!id && !username) {
         const user = await this.prisma.user.findMany({
           select: {
+            id: true,
             username: true,
             email: true,
             description: true,
