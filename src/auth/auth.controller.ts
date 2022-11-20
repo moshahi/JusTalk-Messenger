@@ -34,9 +34,9 @@ export class AuthController {
     return this.authService.login(body, response);
   }
 
-  @Post('refresh')
-  refresh(@Body() body: RefreshDto, @Req() req: Request, @Res() res: Response) {
-    return this.authService.refresh(+body.id, req, res);
+  @Get('refresh')
+  refresh(@Req() req: Request, @Res() res: Response) {
+    return this.authService.refresh(req, res);
   }
 
   // @UseGuards(AuthenticateGuard)

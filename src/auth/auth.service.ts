@@ -69,13 +69,11 @@ export class AuthService {
       await response.cookie('reftoken', tokens.refreshToken, {
         httpOnly: true,
       });
-      return response
-        .status(200)
-        .json({
-          messege: 'login successfully',
-          data: tokens.accessToken,
-          success: true,
-        });
+      return response.status(200).json({
+        messege: 'login successfully',
+        data: tokens.accessToken,
+        success: true,
+      });
     } catch (error) {
       console.log(error);
       return { messege: 'server error', success: false };
@@ -89,20 +87,32 @@ export class AuthService {
     response.clearCookie('reftoken');
     return response.status(200).json({ messege: 'user logged out' });
   }
-  async refresh(id: number, req: Request, res: Response) {
+  async refresh(req: Request, res: Response) {
     try {
       const reftoken = req.cookies.reftoken;
 
       if (!reftoken) {
-        return res.status(403).json({ message: 'access denided' });
+        return res
+          .status(403)
+          .json({ success: false, message: 'access denided' });
       }
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const tokenVeryfy = await this.jwt.verify(reftoken, {
+        secret: process.env.REFRESH_TKEN,
+      });
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: tokenVeryfy.id },
+      });
       if (!user) {
-        return res.status(404).json({ message: 'user not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: 'user not found' });
       }
       const isMatch = await bcrypt.compare(reftoken, user.ref_token);
       if (!isMatch) {
-        return res.status(403).json({ message: 'access denided' });
+        return res
+          .status(403)
+          .json({ success: false, message: 'access denided' });
       }
       await this.jwt.verifyAsync(reftoken, {
         secret: process.env.REFRESH_TOKEN,
@@ -115,7 +125,8 @@ export class AuthService {
       );
       return res.status(200).json({
         message: 'generate new access token',
-        token,
+        data: token,
+        success: true,
       });
     } catch (error) {
       // console.log(error);
