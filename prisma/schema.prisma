@@ -11,19 +11,21 @@ datasource db {
 }
 
 model User {
-  id          Int         @id @default(autoincrement())
-  username    String      @unique
-  email       String      @unique
-  password    String
-  description String      @default("jus-talk messeger")
-  name        String?
-  profileImg  String?
-  ref_token   String      @default("null")
-  status      status      @default(avalabale)
-  avatarColor String
-  from        Chat[]      @relation("from_user")
-  to          Chat[]      @relation("to_user")
-  UserGroup   UserGroup[]
+  id            Int         @id @default(autoincrement())
+  username      String      @unique
+  email         String      @unique
+  password      String
+  location      String      @default("earth")
+  description   String      @default("I'm new to jus-talk!")
+  name          String?
+  profileImg    String?
+  backgroundImg String      @default("https //res.cloudinary.com/dmgb7kvmn/image/upload/v1667480959/jusTalk/mmvx1frutemx1oefesta.jpg")
+  ref_token     String      @default("null")
+  status        status      @default(avalabale)
+  avatarColor   String
+  from          Chat[]      @relation("from_user")
+  to            Chat[]      @relation("to_user")
+  UserGroup     UserGroup[]
 }
 
 enum status {
