@@ -93,13 +93,21 @@ export class AuthService {
       return { message: 'server error', success: false };
     }
   }
-  async logOut(userId: number, response: Response) {
+  async logOut(req: Request, res: Response) {
+    const reftoken = req.cookies.reftoken;
+    if (!reftoken) {
+      return res.status(403).json({ success: false, message: 'access denied' });
+    }
+    const tokenVerify = await this.jwt.verify(reftoken, {
+      secret: process.env.REFRESH_TOKEN,
+    });
+
     await this.prisma.user.update({
-      where: { id: userId },
+      where: { id: +tokenVerify.id },
       data: { ref_token: 'null' },
     });
-    response.clearCookie('reftoken');
-    return response.status(200).json({ message: 'user logged out' });
+    res.clearCookie('reftoken');
+    return res.status(200).json({ message: 'user logged out' });
   }
   async refresh(req: Request, res: Response) {
     try {
@@ -115,7 +123,7 @@ export class AuthService {
       });
 
       const user = await this.prisma.user.findUnique({
-        where: { id: tokenVerify.id },
+        where: { id: +tokenVerify.id },
       });
       if (!user) {
         return res
