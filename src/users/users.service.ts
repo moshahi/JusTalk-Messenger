@@ -8,54 +8,51 @@ export class UsersService {
 
   async getFilteredUsers(query: GetUsersDto) {
     try {
-      const { id, username } = query;
-      if (id && !username) {
+      const { id, username, email, limit, page } = query;
+      const select = {
+        id: true,
+        username: true,
+        email: true,
+        description: true,
+        profileImg: true,
+        avatarColor: true,
+        status: true,
+      };
+      if (id && !username && !email) {
         const user = await this.prisma.user.findUnique({
           where: { id: +id },
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            description: true,
-            profileImg: true,
-            avatarColor: true,
-            status: true,
-          },
+          select,
         });
         if (user) {
           return { success: true, message: 'user founded', data: user };
         }
         return { success: false, message: 'user not found' };
       }
-      if (!id && username) {
+      if (!id && username && !email) {
         const user = await this.prisma.user.findUnique({
           where: { username },
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            description: true,
-            profileImg: true,
-            avatarColor: true,
-            status: true,
-          },
+          select,
         });
         if (user) {
           return { success: true, message: 'user founded', data: user };
         }
         return { success: false, message: 'user not found' };
       }
-      if (!id && !username) {
+      if (!id && !username && email) {
+        const user = await this.prisma.user.findUnique({
+          where: { email },
+          select,
+        });
+        if (user) {
+          return { success: true, message: 'user founded', data: user };
+        }
+        return { success: false, message: 'user not found' };
+      }
+      if (!id && !username && !email) {
         const user = await this.prisma.user.findMany({
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            description: true,
-            profileImg: true,
-            avatarColor: true,
-            status: true,
-          },
+          select,
+          skip: (+page - 1) * limit,
+          take: limit,
         });
         if (user) {
           return { success: true, message: 'users founded', data: user };
