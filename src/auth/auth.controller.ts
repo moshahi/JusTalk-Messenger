@@ -37,7 +37,7 @@ export class AuthController {
 
   // @UseGuards(AuthenticateGuard)
   @Post('logout')
-  logout(@Body() body: logOutDto, @Res() response: Response) {
-    return this.authService.logOut(+body.id, response);
+  logout(@Req() req: Request, @Res() response: Response) {
+    return this.authService.logOut(req, response);
   }
 }
